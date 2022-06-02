@@ -7,7 +7,7 @@
 
 ## CONTENTS
 '
- 15 yellow stones
+ 15 orange stones
  15 green stones
  15 blue stones
  5x5 hex game board (tentative size)
@@ -19,7 +19,7 @@
  Create groups of three stones of the same color in the orientation 
  unique to that color. Each group of three is worth one point.
 '
-# yellow stone group orientation: two linear, one offset
+# orange stone group orientation: two linear, one offset
 #   X X X X X    X X X X X 
 #   X O O X X    X X O X X
 #   O X X X X    X X O X X
@@ -49,15 +49,15 @@
 
 ## BASIC MOTION
 '
- yellow stones push blue stones one space in a linear path.
+ orange stones push blue stones one space in a linear path.
  blue stones push green stones one space in a linear path.
- green stones push yellow stones one space in a linear path.
+ green stones push orange stones one space in a linear path.
 '
 
 ## COMBOS
-# If a yellow stone pushes a blue stone into a space adjacent to a green stone,
+# If a orange stone pushes a blue stone into a space adjacent to a green stone,
 #   the green stone is also pushed one space by the blue stone. If the pushed
-#   green stone is adjacent to a yellow stone, the yellow stone is subsequently
+#   green stone is adjacent to a orange stone, the orange stone is subsequently
 #   pushed one space by the green stone. As so on and so forth. The reaction 
 #   will continue until no other stones can be pushed.
 #     X X X X X         X X X X W       X X X X X 
@@ -67,7 +67,7 @@
 #     X X X X X         X X B X X       X X X X X 
 #
 #
-# If a blue stone is adjacent to a green stone on the board and a yellow stone
+# If a blue stone is adjacent to a green stone on the board and a orange stone
 #   is placed linearly adjacent to the blue stone, the blue stone remains 
 #   stationary while the green stone is pushed one space (if open) by 
 #   Newton's Cradle law.
@@ -92,7 +92,7 @@
 ## GAME PLAY METRICS
 '
  05/30/22: initial observations
-    - yellow configuration is more likely to occur by random placement, no pushing or replacement
+    - orange configuration is more likely to occur by random placement, no pushing or replacement
 '
 #############################################################################
 ## GAME BUILDING
@@ -164,7 +164,7 @@ createBoard <- function(size=13,x0=4,y0=11){
   '
     Blue - linear-linear-linear
     Green - three nearest neighbors
-    Yellow - linear-linear-offset
+    orange - linear-linear-offset
   '
   
   linear_rows <- list(c(7,4,2,1),
@@ -278,13 +278,62 @@ refreshBoard <- function(size=13,x0=4,y0=11){
 updateBoard <- function(centers,selection,placeRandom){
   x_cell <- centers$X[which(centers$ID==placeRandom)]
   y_cell <- centers$Y[which(centers$ID==placeRandom)]
-  points(x_cell,y_cell,col=selection$stone,pch=19,cex=4)
+  points(x_cell,y_cell,col=pastellize(selection$stone,p=0.4),pch=19,cex=4,lwd=2)
 }
 
+pastellize <- function(x, p){
+  
+  # x is a colour
+  # p is a number in [0,1]
+  # p = 1 will give no pastellization
+  
+  # convert hex or letter names to rgb
+  if (is.character(x)) x <- col2rgb(x)/255
+  
+  # convert vector to rgb
+  if (is.numeric(x)) x <- matrix(x, nr=3)
+  
+  col <- rgb2hsv(x, maxColorValue=1)
+  col[2,1] <- col[2,1]*p
+  col <- hsv2rgb(col)
+  
+  # return in convenient format for plots
+  rgb(col[1], col[2], col[3])
+}
+
+hsv2rgb <- function(x){  
+  # convert an hsv colour to rgb  
+  # input:  a 3 x 1 matrix (same as output of rgb2hsv() function)  
+  # output: vector of length 3 with values in [0,1]    
+  
+  # recover h, s, v values  
+  h <- x[1,1]  
+  s <- x[2,1]  
+  v <- x[3,1]    
+  
+  # follow the algorithm from Wikipedia  
+  C <- s*v   
+  
+  # in R, h takes values in [0,1] rather than [0, 360], so dividing by  
+  # 60 degrees is the same as multiplying by six  
+  hdash <- h*6  
+  X <- C * (1 - abs(hdash %% 2 -1))
+  
+  if (0 <= hdash & hdash <=1) RGB1 <- c(C, X, 0)  
+  if (1 <= hdash & hdash <=2) RGB1 <- c(X, C, 0)  
+  if (2 <= hdash & hdash <=3) RGB1 <- c(0, C, X)  
+  if (3 <= hdash & hdash <=4) RGB1 <- c(0, X, C)  
+  if (4 <= hdash & hdash <=5) RGB1 <- c(X, 0, C)  
+  if (5 <= hdash & hdash <=6) RGB1 <- c(C, 0, X)    
+  
+  # the output is a vector of length 3. This is the most convenient  
+  # format for using as the col argument in an R plotting function  
+  RGB1 + (v-C)
+}
 
 ## DRAW STONES
 initializeBag <- function(num_stones=12){
-  bag_init = c(rep("yellow",num_stones),rep("blue",num_stones),rep("green",num_stones))
+  bag_init = c(rep("orange",num_stones),rep("blue",num_stones),rep("green",num_stones))
   return(list("available"=bag_init,"memory"=c()))
 }
 
@@ -384,10 +433,10 @@ legalPositions <- function(centers){
     }
   }
   
-  # check yellow - linear+offset - VAL=1
-  check_yellow <- c()
+  # check orange - linear+offset - VAL=1
+  check_orange <- c()
   for(i in seq_along(centers$neighbors)){
-    group_yellow <- c()
+    group_orange <- c()
     hex_neighbors <- centers$neighbors[[i]]
     if(length(hex_neighbors)==6){ 'for fully surrounded hexes'
       tmp_hex <- c(hex_neighbors[5:6],hex_neighbors)
@@ -397,7 +446,7 @@ legalPositions <- function(centers){
         if(any(yel==3)){
           yel_id <- which(yel==3)
           for(j in seq_along(yel_id)){
-            group_yellow <- append(group_yellow,list(tmp_hex[seq(yel_id[j],yel_id[j]+2)]),after=length(group_yellow))
+            group_orange <- append(group_orange,list(tmp_hex[seq(yel_id[j],yel_id[j]+2)]),after=length(group_orange))
           }
         }
       }
@@ -408,20 +457,20 @@ legalPositions <- function(centers){
         if(any(yel==3)){
           yel_id <- which(yel==3)
           for(j in seq_along(yel_id)){
-            group_yellow <- append(group_yellow,list(hex_neighbors[seq(yel_id[j],yel_id[j]+2)]),after=length(group_yellow))
+            group_orange <- append(group_orange,list(hex_neighbors[seq(yel_id[j],yel_id[j]+2)]),after=length(group_orange))
           }
         }
       }
     }
     
     
-    if(!is.null(group_yellow)){
-      check_yellow <- append(check_yellow,group_yellow,after=length(check_yellow))
+    if(!is.null(group_orange)){
+      check_orange <- append(check_orange,group_orange,after=length(check_orange))
     }
   }
   
   'determine yes/no'
-  if(is.null(check_blue) & is.null(check_green) & is.null(check_yellow)){
+  if(is.null(check_blue) & is.null(check_green) & is.null(check_orange)){
     outcome <- "LEGAL"
   } else {
     outcome <- "ILLEGAL"
@@ -431,7 +480,7 @@ legalPositions <- function(centers){
   return(list("outcome" = outcome,
               "blue"=check_blue,
               "green"=check_green,
-              "yellow"=check_yellow))
+              "orange"=check_orange))
 }
 
 selectPosition <- function(available_positions){
@@ -448,7 +497,7 @@ updatePositions <- function(centers,selection,placeRandom){
   update_centers$turn <- centers$turn + 1
 
   switch(selection$stone,
-         yellow = update_centers$VAL[placeRandom] <- 1,
+         orange = update_centers$VAL[placeRandom] <- 1,
          blue = update_centers$VAL[placeRandom] <- 2,
          green = update_centers$VAL[placeRandom] <- 3)
   
