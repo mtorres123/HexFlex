@@ -7,10 +7,10 @@
 
 ## CONTENTS
 '
- 15 orange stones
- 15 green stones
- 15 blue stones
- 5x5 hex game board (tentative size)
+ 12 orange stones
+ 12 green stones
+ 12 blue stones
+ 37 space hex game board (tentative size)
  opaque drawstring bag
 '
 
@@ -19,26 +19,9 @@
  Create groups of three stones of the same color in the orientation 
  unique to that color. Each group of three is worth one point.
 '
-# orange stone group orientation: two linear, one offset
-#   X X X X X    X X X X X 
-#   X O O X X    X X O X X
-#   O X X X X    X X O X X
-#   X X X X X    X O X X X 
-#   X X X X X    X X X X X 
-#
-# blue stone group orientation: three in a line
-#   X X X X X     X X X X X 
-#   X X O X X     X X X X X
-#   X X O X X     X O O O X
-#   X X O X X     X X X X X
-#   X X X X X     X X X X X 
-#
-# green stone group orientation: three vertices (triangle)
-#   X X X X X     X X X X X 
-#   X X O X X     X X X X X 
-#   X O O X X     X X O O X 
-#   X X X X X     X X O X X 
-#   X X X X X     X X X X X 
+# any group of 3+ continuous green stones
+# any group of 4+ continuous orange stones
+# any group of 5+ continuous blue stones
 
 ## GAMEPLAY
 '
@@ -60,39 +43,31 @@
 #   green stone is adjacent to a orange stone, the orange stone is subsequently
 #   pushed one space by the green stone. As so on and so forth. The reaction 
 #   will continue until no other stones can be pushed.
-#     X X X X X         X X X X W       X X X X X 
-#     X R X W X         X R X X X       B X R X W 
-#     X X X X X   -->   X X R X X   OR  X X X X X 
-#     X X R X X         X X X X X       X X R X X 
-#     X X X X X         X X B X X       X X X X X 
-#
-#
-# If a blue stone is adjacent to a green stone on the board and a orange stone
-#   is placed linearly adjacent to the blue stone, the blue stone remains 
-#   stationary while the green stone is pushed one space (if open) by 
-#   Newton's Cradle law.
-#     X X X X X         X X W X X
-#     X X W X X         X X X X X
-#     X X R X X   -->   X X R X X
-#     X X X X X         X X B X X
-#     X X X X X         X X X X X
+#     X X X X X         X X G X X       X X X X X 
+#     X B X G X         X B X X X       O X B X G 
+#     X X X X X   -->   X X B X X   OR  X X X X X 
+#     X X B X X         X X X X X       X X B X X 
+#     X X X X X         X X O X X       X X X X X 
 
 ## RESTRICTIONS
 '
- A stone cannot be placed on the board to create the desiblue orientation. The
- orientation must be created by pushing the stones into place.
+ N/A for now
 '
 
 ## EDGE EFFECTS
 '
- Stones can be pushed "off the edge" of the board if pushed by its counterpart.
- Stones pushed off the edge of the board are returned to the drawstring bag.
+ N/A for now
 '
 
 ## GAME PLAY METRICS
 '
  05/30/22: initial observations
     - orange configuration is more likely to occur by random placement, no pushing or replacement
+ 06/03/2022: change game mechanics
+    - no illegal positions
+    - no pushing off board
+    - no Newton cradle pushing effect
+    - objective change to groups of 3+, 4+, and 5+ for green, orange, blue, respectively in any orientation
 '
 #############################################################################
 ## GAME BUILDING
@@ -530,6 +505,8 @@ for(game in seq(36)){
 
     placeStone <- selectPosition(open_positions)
     centers_new_tmp <- updatePositions(centers_new,bag_update_tmp,placeStone)
+    
+    
     illegal_positions <- legalPositions(centers_new_tmp)
     status <- illegal_positions$outcome
     
