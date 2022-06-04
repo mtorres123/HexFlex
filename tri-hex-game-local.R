@@ -467,20 +467,48 @@ selectPosition <- function(available_positions){
   return(placeRandom)
 }
 
-updatePositions <- function(centers,selection,placeRandom){
+updatePositions <- function(centers,selection,placement){
   update_centers <- centers
-  update_centers$turn <- centers$turn + 1
+  #update_centers$turn <- centers$turn + 1
 
   switch(selection$stone,
-         orange = update_centers$VAL[placeRandom] <- 1,
-         blue = update_centers$VAL[placeRandom] <- 2,
-         green = update_centers$VAL[placeRandom] <- 3)
+         orange = update_centers$VAL[placement] <- 1,
+         blue = update_centers$VAL[placement] <- 2,
+         green = update_centers$VAL[placement] <- 3)
   
   return(update_centers)
 }
 
-pushStones <- function(){
-  
+pushStones <- function(centers,selection,placement){
+  '
+   check neighbors of placed stone
+   evaluate push rule until reaction complete
+   update centers
+  '
+  push <- NULL
+  neighbors <- centers$neighbors[[placement]]
+  if(selection$stone == "green" && any(centers$VAL[neighbors]==1)){
+    nearest_id <- which(centers$VAL[neighbors]==1)
+    for(i in seq_along(nearest_id)){
+      next_nearest <- centers$neighbors[[neighbors[nearest_id]]]
+      row_group <- c()
+      for(j in seq_along(centers$linear_rows)){
+        tmp <- sum(as.integer(c(placement,neighbors[nearest_id[i]]) %in% centers$linear_rows[[j]]))
+        if(tmp == 2){ row_group <- centers$linear_rows[[j]] }
+      }
+      a <- which(row_group==placement)
+      b <- which(row_group==neighbors[nearest_id[j]])
+      next_nearest_space <- row_group[b+(b-a)]
+      if(centers$VAL[next_nearest_space]==0){
+        push <- c(neighbors[nearest_id[i]],next_nearest_space)
+      }
+    }
+    
+  } else if(selection$stone == "orange" && any(centers$VAL[neighbors]==2)){
+    
+  } else if(selection$stone == "blue" && any(centers$VAL[neighbors]==3)){
+    
+  }
 }
 
 #############################################
@@ -489,7 +517,7 @@ pushStones <- function(){
 centers <- createBoard()
 bag <- initializeBag()
 turn <- 0
-illegal_count <- 0
+#illegal_count <- 0
 for(game in seq(36)){
   if(turn==0){
     selection <- drawFromBag(bag)
@@ -507,8 +535,8 @@ for(game in seq(36)){
     centers_new_tmp <- updatePositions(centers_new,bag_update_tmp,placeStone)
     
     
-    illegal_positions <- legalPositions(centers_new_tmp)
-    status <- illegal_positions$outcome
+    #illegal_positions <- legalPositions(centers_new_tmp)
+    #status <- illegal_positions$outcome
     
     if(status == "LEGAL"){
       # --> push stones, update positions, eval win, remove stones, update bag, update board
@@ -523,8 +551,7 @@ for(game in seq(36)){
   }
 }
 
-print(illegal_count)
-
+#print(illegal_count)
 # print(bag_update)
 # print(centers_new)
 
