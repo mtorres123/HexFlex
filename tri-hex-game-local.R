@@ -481,14 +481,22 @@ updatePositions <- function(centers,selection,placement){
 
 pushStones <- function(centers,selection,placement){
   '
-   check neighbors of placed stone
-   evaluate push rule until reaction complete
-   update centers
+  inputs: centers_new_tmp, bag_update_tmp,placeStone
+  logic:
+    - check neighbors of placed stone
+    - evaluate push rule until reaction complete
+    - update centers
   '
   push <- NULL
   neighbors <- centers$neighbors[[placement]]
-  if(selection$stone == "green" && any(centers$VAL[neighbors]==1)){
-    nearest_id <- which(centers$VAL[neighbors]==1)
+  
+  input <- switch(selection$stone,
+                  "green" = 1,
+                  "orange" = 2,
+                  "blue" = 3)
+  
+  if(any(centers$VAL[neighbors]==input)){
+    nearest_id <- which(centers$VAL[neighbors]==input)
     for(i in seq_along(nearest_id)){
       next_nearest <- centers$neighbors[[neighbors[nearest_id]]]
       row_group <- c()
@@ -503,12 +511,8 @@ pushStones <- function(centers,selection,placement){
         push <- c(neighbors[nearest_id[i]],next_nearest_space)
       }
     }
-    
-  } else if(selection$stone == "orange" && any(centers$VAL[neighbors]==2)){
-    
-  } else if(selection$stone == "blue" && any(centers$VAL[neighbors]==3)){
-    
   }
+  
 }
 
 #############################################
@@ -538,16 +542,16 @@ for(game in seq(36)){
     #illegal_positions <- legalPositions(centers_new_tmp)
     #status <- illegal_positions$outcome
     
-    if(status == "LEGAL"){
+    # if(status == "LEGAL"){
       # --> push stones, update positions, eval win, remove stones, update bag, update board
       
-      centers_new <- centers_new_tmp
-      bag_update <- bag_update_tmp
-      updateBoard(centers_new,bag_update,placeStone)
-      turn <- turn + 1
-    } else {
-      illegal_count <- illegal_count + 1
-    }
+    centers_new <- centers_new_tmp
+    bag_update <- bag_update_tmp
+    updateBoard(centers_new,bag_update,placeStone)
+    turn <- turn + 1
+    # } else {
+      # illegal_count <- illegal_count + 1
+    # }
   }
 }
 
