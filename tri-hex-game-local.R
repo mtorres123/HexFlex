@@ -540,14 +540,14 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
                              "1" = "orange",
                              "2" = "blue",
                              "3" = "green")
-      update_selection$stone[i] <- pushed_stone
+      update_selection$stone <- pushed_stone
       
       update_centers$VAL[push[[i]][1]] <- 0 # resets reactive stone placement
       update_centers$VAL[push[[i]][2]] <- pushed_stone_id # assigns reactive stone new placement
     }
     
     # option 2: update board and run recursion after evaluating all initial pushes
-    updateBoard(centers=update_centers,selection=update_selection,placeRandom=push_space)
+    updateBoard(centers=update_centers,selection=update_selection,placeRandom=push[[i]][2])
     pushStones(centers=update_centers,selection=update_selection,placement=push[[i]][2])
   }
 }
