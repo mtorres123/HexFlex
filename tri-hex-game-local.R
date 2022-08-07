@@ -257,7 +257,9 @@ updateBoard <- function(centers,selection,placeRandom){
   points(x_cell,y_cell,col=pastellize(selection$stone,p=0.4),pch=19,cex=4,lwd=2)
   
   # reset hexes according to 0 value
-  
+  x_reset <- centers$X[which(centers$VAL==0)]
+  y_reset <- centers$Y[which(centers$VAL==0)]
+  points(x_reset,y_reset,col=NA)
 }
 
 pastellize <- function(x, p){
@@ -537,7 +539,7 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
     
     # option 1: update board and run recursion following individual pushes
     updateBoard(centers=update_centers,selection = update_selection,placeRandom = push[[i]][2])
-    pushStones(centers=update_centers,selection=push[[i]],placement=push[[i]][2],push=push)
+    pushStones(centers=update_centers,selection=update_selection,placement=push[[i]][2],push=push)
   }
   
   # option 2: update board and run recursion after evaluating all initial pushes
