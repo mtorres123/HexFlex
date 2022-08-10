@@ -498,7 +498,13 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
     - update centers
   '
   # push <- NULL
-  updateBoard(centers,selection,placement)
+  board <- centers
+  bag <- selection
+  position <- placement
+  metrics.edges <- c()
+  metrics.unavailable <- c()
+  
+  # updateBoard(centers,selection,placement)
   neighbors <- centers$neighbors[[placement]]
   
   input <- switch(selection$stone,
@@ -518,10 +524,21 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
       }
       a <- which(row_group==placement)
       b <- which(row_group==neighbors[nearest_id[i]])
-      next_nearest_space <- row_group[b+(b-a)] # identify next nearest available space in row
-      if(!is.na(next_nearest_space) && centers$VAL[next_nearest_space]==0){ # if empty, record push reaction
-        push <- append(push, list(c(neighbors[nearest_id[i]],next_nearest_space)),after=length(push))
+      if(b+(b-a) > length(row_group) || b+(b-a) == 0){
+        metrics.edges <- metrics.edges + 1
+      } else {
+        next_nearest_space <- row_group[b+(b-a)] # identify next nearest available space in row
+        
+        if(isFALSE(next_nearest_space)){ metrics.unavailable <- metrics.unavailable + 1 }
+        else if(centers$VAL[next_nearest_space]==0){
+          push <- append(push, list(c(neighbors[nearest_id[i]],next_nearest_space)),after=length(push))
+        }
       }
+      
+      # if (is.numeric(next_nearest_space) && centers$VAL[next_nearest_space]==0){ # if empty, record push reaction
+      #   push <- append(push, list(c(neighbors[nearest_id[i]],next_nearest_space)),after=length(push))
+      # }
+ 
     }
   }
   
@@ -532,9 +549,9 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
   else{
     update_centers <- centers
     update_selection <- selection
-    push_space <- c()
+    # push_space <- c()
     for(i in seq_along(push)){
-      push_space <- c(push_space, push[[i]][2])
+      # push_space <- c(push_space, push[[i]][2])
       pushed_stone_id <- update_centers$VAL[push[[i]][1]]
       pushed_stone <- switch(as.character(pushed_stone_id),
                              "1" = "orange",
@@ -544,11 +561,15 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
       
       update_centers$VAL[push[[i]][1]] <- 0 # resets reactive stone placement
       update_centers$VAL[push[[i]][2]] <- pushed_stone_id # assigns reactive stone new placement
+      
+      print(paste(pushed_stone,"at",push[[i]][1],"pushed to",push[[i]][2]))
+      updateBoard(centers=update_centers,selection=update_selection,placeRandom=push[[i]][2])
+      return(pushStones(centers=update_centers,selection=update_selection,placement=push[[i]][2]))
     }
     
     # option 2: update board and run recursion after evaluating all initial pushes
-    updateBoard(centers=update_centers,selection=update_selection,placeRandom=push[[i]][2])
-    pushStones(centers=update_centers,selection=update_selection,placement=push[[i]][2])
+    # updateBoard(centers=update_centers,selection=update_selection,placeRandom=push[[i]][2])
+    # pushStones(centers=update_centers,selection=update_selection,placement=push[[i]][2])
   }
 }
 
@@ -575,10 +596,11 @@ for(game in seq(36)){
     
     placeStone <- selectPosition(open_positions)
     centers_new_tmp <- updatePositions(centers_new,bag_update_tmp,placeStone)
+    updateBoard(centers_new_tmp,bag_update_tmp,placeStone)
     
     # push stones - recursive function
     print(paste(bag_update_tmp$stone,"stone placed at:",placeStone))
-    reaction <- pushStones()
+    reaction <- pushStones(centers = centers_new_tmp, selection = bag_update_tmp, placement = placeStone)
     centers_new <- reaction[[1]]
     bag_update <- reaction[[2]]
     
@@ -594,6 +616,7 @@ for(game in seq(36)){
     # } else {
     # illegal_count <- illegal_count + 1
     # }
+    Sys.sleep(1)
   }
 }
 
