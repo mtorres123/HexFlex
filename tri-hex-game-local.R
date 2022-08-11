@@ -573,6 +573,40 @@ pushStones <- function(centers=centers_new_tmp,selection=bag_update_tmp,placemen
   }
 }
 
+scorePoints <- function(board, bag, placement){
+  '
+  scoring:
+  -- 3 points for any contiguous group of 3 green stones
+  -- 4 points for any contiguous gorup of 4 orange stones
+  -- 5 points for any contiguous group of 5 blue stones
+  
+  logic:
+  -- check current board and current placement
+  -- evaluate for scoring condition
+  -- if score, remove stones from board, return board and number of points
+  -- if no score, return board and no points
+  '
+  
+  neighbors <- board$neighbors[[placement]]
+  input <- switch(bag$stone,
+                  "orange" = 1,
+                  "blue" = 2,
+                  "green" = 3)
+  score <- switch(as.character(input),
+                  "1" = 4,
+                  "2" = 5,
+                  "3" = 3)
+  
+  if(any(centers$VAL[neighbors]==input)){ # evaluate matching neighbors
+    group_id <- which(centers$VAL[neighbors]==input)
+    if(length(group_id) == score){ # evaluate scoring condition
+      num.points <- score # assign points
+      # update board
+      # update bag
+    }
+  }
+}
+
 #############################################
 ## GAMEPLAY
 
